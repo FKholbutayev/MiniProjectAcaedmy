@@ -1,76 +1,88 @@
 package com.company;
 
-import com.googlecode.lanterna.*;
+
+import com.googlecode.lanterna.TerminalFacade;
 import com.googlecode.lanterna.input.Key;
 import com.googlecode.lanterna.terminal.Terminal;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 
 public class Main {
+    public Main() {
+    }
 
     public static void main(String[] args) throws InterruptedException {
-        Terminal terminal = TerminalFacade.createTerminal(System.in,
-                System.out, Charset.forName("UTF8"));
+        Terminal terminal = TerminalFacade.createTerminal(System.in, System.out, Charset.forName("UTF8"));
         terminal.enterPrivateMode();
+        Object lock = new Object();
+        Hero myHero = new Hero(15, 20, 3, terminal, lock);
+        //Bullet bullet = new Bullet(myHero.getX()+1, myHero.getY(), terminal, lock);
+        //bullet.start();
+        System.out.println(terminal.getTerminalSize());
 
-        Monster monster = new Monster();
-        Player hero = new Player(0, 20);
-        terminal.moveCursor(hero.x, hero.y);
-        terminal.putCharacter(hero.c);
-
-        terminal.moveCursor(monster.x, monster.y);
-        terminal.putCharacter(monster.c);
-
-//        List<Monster> monsterList = Monster.monsterList();
+        terminal.moveCursor(myHero.getX(), myHero.getY());
+        terminal.putCharacter('O');
 
 
-        Monster.monsterMove(terminal);
+        terminal.setCursorVisible(false);
 
+        Monster a = new Monster();
+        MonsterThread monsterthread = new MonsterThread(a, terminal, lock);
+        monsterthread.start();
+        List<Monster> mss = MonsterGenerator.monsterList();
+
+
+
+
+        for (int i = mss.size()-1 ;i>=0; i--){
+            MonsterThread mth = new MonsterThread(mss.get(i), terminal, lock);
+            mth.start();
+        }
 
         while (true) {
+
+
+            boolean running = true;
+
+
             Key key;
-            int i = 0;
-            Thread.sleep(60);
-                key =terminal.readInput();
-
-                if (key !=null){
-                    Monster.monsterMove(terminal);
-
-                    switch (key.getKind()){
-                        case ArrowLeft:
-                            hero.x = hero.x-1;
-                            break;
-                        case ArrowDown:
-                            hero.y = hero.y+1;
-                            break;
-                        case ArrowUp:
-                            hero.y = hero.y-1;
-                            break;
-                        case ArrowRight:
-                            hero.x = hero.x+1;
-                            break;
-                        default:
-
-                    }
-
-                }
-
-                terminal.clearScreen();
-
-            terminal.moveCursor(hero.x, hero.y);
-            terminal.putCharacter(hero.c);
-            terminal.moveCursor(0, 0);
             do {
-//                Monster.monsterMove(terminal);
-                i++;
-            } while (i<7);
+                Thread.sleep(10L);
+                key = terminal.readInput();
+            } while (key == null);
 
+            System.out.println(key.getCharacter() + " " + key.getKind());
+            switch (key.getKind()) {
+                case ArrowDown:
+                    myHero.moveDown();
+                    break;
+                case ArrowUp:
+                    myHero.moveUp();
+                    break;
+                case ArrowLeft:
+                    myHero.moveLeft();
 
+                    break;
+                case ArrowRight:
+                    myHero.moveRight();
+                    break;
+
+                case NormalKey:
+                    Bullet bullet = new Bullet(myHero.getX()+1, myHero.getY(), terminal, lock, mss);
+                    bullet.start();
+                    Collision cs = new Collision(mss, terminal, bullet);
+                    cs.collision(mss, terminal, bullet);
+//                    if (bullet.getX()>100){
+//                        bullet = null;
+//                        System.out.println("ok");
+//                    }
+//                    System.out.println("hej igen");
+                    break;
+
+            }
+            myHero.drawCharacter();
+            System.out.println(key.getCharacter() + " " + key.getKind());
         }
     }
 }
