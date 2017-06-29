@@ -5,6 +5,9 @@ import com.googlecode.lanterna.TerminalFacade;
 import com.googlecode.lanterna.input.Key;
 import com.googlecode.lanterna.terminal.Terminal;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -24,19 +27,21 @@ public class Main {
         terminal.moveCursor(myHero.getX(), myHero.getY());
         terminal.putCharacter('O');
 
+        playSound("Chill-house-music-loop-116-bpm.wav");
+
 
         terminal.setCursorVisible(false);
 
         Monster a = new Monster();
-        MonsterThread monsterthread = new MonsterThread(a, terminal, lock);
-        monsterthread.start();
+
+
         List<Monster> mss = MonsterGenerator.monsterList();
+        MonsterThread monsterthread = new MonsterThread(a, terminal, lock, myHero,mss);
+        monsterthread.start();
 
 
-
-
-        for (int i = mss.size()-1 ;i>=0; i--){
-            MonsterThread mth = new MonsterThread(mss.get(i), terminal, lock);
+        for (int i = mss.size() - 1; i >= 0; i--) {
+            MonsterThread mth = new MonsterThread(mss.get(i), terminal, lock, myHero, mss);
             mth.start();
         }
 
@@ -69,20 +74,41 @@ public class Main {
                     break;
 
                 case NormalKey:
-                    Bullet bullet = new Bullet(myHero.getX()+1, myHero.getY(), terminal, lock, mss);
+
+                    Bullet bullet = new Bullet(myHero.getX() + 1, myHero.getY(), terminal, lock, mss);
                     bullet.start();
+                    playSound("380_gunshot_single-mike-koenig.wav");
                     Collision cs = new Collision(mss, terminal, bullet);
-                    cs.collision(mss, terminal, bullet);
-//                    if (bullet.getX()>100){
+//                    cs.collision(mss, terminal, bullet);
+                    if (bullet.getX() > 100) {
 //                        bullet = null;
-//                        System.out.println("ok");
+//                        System.out.println("ok");d
 //                    }
 //                    System.out.println("hej igen");
-                    break;
+                        break;
 
+                    }
+                    myHero.drawCharacter();
+                    System.out.println(key.getCharacter() + " " + key.getKind());
             }
-            myHero.drawCharacter();
-            System.out.println(key.getCharacter() + " " + key.getKind());
         }
+    }
+
+    public static synchronized void playSound(String file) {
+        new Thread(new Runnable() {
+            // The wrapper thread is unnecessary, unless it blocks on the
+            // Clip finishing; see comments.
+            public void run() {
+                try {
+                    Clip clip = AudioSystem.getClip();
+                    AudioInputStream inputStream = AudioSystem.getAudioInputStream(
+                            Main.class.getResourceAsStream(file));
+                    clip.open(inputStream);
+                    clip.start();
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
+            }
+        }).start();
     }
 }

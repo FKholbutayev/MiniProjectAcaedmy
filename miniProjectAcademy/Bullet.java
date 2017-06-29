@@ -55,10 +55,13 @@ public class Bullet extends Thread {
                         move();
                         this.terminal.moveCursor(this.x, this.y);
                         for (int i = monsters.size()-1; i>=0; i--) {
-                            if (monsters.get(i).x == x && monsters.get(i).y == y) {
+                            if ((monsters.get(i).x == x) && (monsters.get(i).y == y)) {
                                 System.out.println("walla walla");
                                 monsters.get(i).c = ' ';
                                 monsters.remove(i);
+                                //MonsterGenerator.monsterList();
+                                System.out.println("we are here");
+                                System.out.println("monster added");
                             }
                         }
                         this.terminal.putCharacter('*');

@@ -30,7 +30,7 @@ public class Hero {
     public void moveUp() {
         synchronized (lock) {
             this.terminal.moveCursor(this.x, this.y);
-            if (this.y <= 10) {
+            if (this.y <= 0) {
                 System.out.println("upper border control");
 
             } else {
@@ -47,7 +47,7 @@ public class Hero {
     public void moveDown() {
         synchronized (lock) {
             this.terminal.moveCursor(this.x, this.y);
-            if (this.y >= 25) {
+            if (this.y >= 30) {
                 System.out.println("down border control");
 
             } else {
@@ -96,6 +96,8 @@ public class Hero {
 
 
     }
+
+
 
     public void setLife(int life) {
         this.life = life;

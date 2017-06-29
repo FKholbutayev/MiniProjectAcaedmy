@@ -22,7 +22,7 @@ public class Collision {
     public void collision(List<Monster> mss, Terminal terminal, Bullet bullet){
         for (int i = mss.size()-1; i>=0; i--){
             if (mss.get(i).x == bullet.getX() && mss.get(i).y == bullet.getY()){
-                System.out.println("walla walla");
+                System.out.println("Collosion in collision");
             }
         }
     }
